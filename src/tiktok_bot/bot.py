@@ -1,5 +1,6 @@
 import logging
 import time
+import os  # <--- ДОБАВЛЕН ИМПОРТ ДЛЯ ЧТЕНИЯ СЕКРЕТОВ
 from typing import Optional, Callable
 from pathlib import Path
 
@@ -44,6 +45,28 @@ class StreakBot:
             return 0
 
         note(f"Found {len(rows)} streak contact(s).")
+
+        # =========================================================================
+        # БЛОК ОДНОРАЗОВОГО СООБЩЕНИЯ (Управляется через секреты GitHub)
+        # =========================================================================
+        one_off_target = os.getenv("ONE_OFF_TARGET")
+        one_off_message = os.getenv("ONE_OFF_MESSAGE")
+        
+        if one_off_target and one_off_message:
+            note(f"⚠️ ОБНАРУЖЕНА ЦЕЛЬ ДЛЯ ОДНОРАЗОВОГО СООБЩЕНИЯ: {one_off_target}")
+            note(f"Отправляем текст: '{one_off_message}'...")
+            
+            # Передаем пустой conversation_id (""), так как стрика нет и мы не знаем его ID
+            # API TikTok сам создаст/найдет диалог по uid пользователя
+            res = self.inbox.send(one_off_target, one_off_message, "", 1)
+            
+            if res.get("ok"):
+                note(f"✓ Одноразовое сообщение успешно отправлено {one_off_target}")
+            else:
+                note(f"✗ Ошибка отправки одноразового сообщения: {res.get('msg')}")
+            
+            time.sleep(1.5) # Небольшая пауза перед основной рассылкой
+        # =========================================================================
 
         if force:
             note(f"Force dispatch enabled. Sending '{self.msg}' to all {len(rows)} streak contacts...")
