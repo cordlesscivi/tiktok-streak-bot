@@ -3,8 +3,16 @@ name: Отправить одно сообщение
 on:
   workflow_dispatch:
     inputs:
+      account_choice:
+        description: 'С какого аккаунта отправить?'
+        required: true
+        type: choice
+        options:
+          - Account 1
+          - Account 2
+        default: 'Account 1'
       target_id:
-        description: 'Цифровой ID пользователя'
+        description: 'Цифровой ID пользователя (только цифры)'
         required: true
         type: string
       message_text:
@@ -31,14 +39,25 @@ jobs:
 
       - name: Prepare config and cookies
         env:
-          TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }} # Использует куки первого аккаунта
-          MESSAGE_TEXT: "dummy"
+          TIKTOK_COOKIES_1: ${{ secrets.TIKTOK_COOKIES }}
+          TIKTOK_COOKIES_2: ${{ secrets.TIKTOK_COOKIES_2 }}
+          ACCOUNT: ${{ inputs.account_choice }}
         run: |
           mkdir -p data
-          echo "$TIKTOK_COOKIES" > data/cookies.json
+          
+          # В зависимости от выбора в выпадающем списке, берем нужные куки
+          if [ "$ACCOUNT" = "Account 1" ]; then
+            echo "Выбран Аккаунт 1"
+            echo "$TIKTOK_COOKIES_1" > data/cookies.json
+          else
+            echo "Выбран Аккаунт 2"
+            echo "$TIKTOK_COOKIES_2" > data/cookies.json
+          fi
+          
+          # Создаем конфиг, который нужен для работы бота
           cat > data/config.json <<EOF
           {
-            "MESSAGE_TO_SEND": "$MESSAGE_TEXT",
+            "MESSAGE_TO_SEND": "dummy",
             "TARGET_SEND_TIME_HM": [12, 0],
             "COOKIES_FILE": "cookies.json",
             "LOG_FILENAME": "data/tiktok_bot.log",
@@ -50,5 +69,5 @@ jobs:
         env:
           ONE_OFF_TARGET: ${{ inputs.target_id }}
           ONE_OFF_MESSAGE: ${{ inputs.message_text }}
-          SKIP_STREAKS: "true"  # <-- Говорим боту остановиться после отправки
+          SKIP_STREAKS: "true"
         run: python main.py --oneshot
