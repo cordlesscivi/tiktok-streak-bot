@@ -22,13 +22,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Prepare config and cookies
+      - name: Prepare config
         env:
-          TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
         run: |
           mkdir -p data
-          echo "$TIKTOK_COOKIES" > data/cookies.json
           cat > data/config.json <<EOF
           {
             "MESSAGE_TO_SEND": "$MESSAGE_TEXT",
@@ -38,9 +36,25 @@ jobs:
             "TEST_MODE": false
           }
           EOF
-          
-      - name: Run bot once
+
+      # ==========================================
+      # 1. ЗАПУСК ДЛЯ ПЕРВОГО АККАУНТА
+      # ==========================================
+      - name: Run Bot for Account 1
         env:
           TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }}
-          MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
-        run: python main.py --oneshot
+        run: |
+          echo "$TIKTOK_COOKIES" > data/cookies.json
+          python main.py --oneshot
+
+      # ==========================================
+      # 2. ЗАПУСК ДЛЯ ВТОРОГО АККАУНТА
+      # ==========================================
+      - name: Run Bot for Account 2
+        env:
+          TIKTOK_COOKIES_2: ${{ secrets.TIKTOK_COOKIES_2 }}
+        run: |
+          # Затираем старые куки и записываем новые
+          echo "$TIKTOK_COOKIES_2" > data/cookies.json
+          # Запускаем бота
+          python main.py --oneshot
