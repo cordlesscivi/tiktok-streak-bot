@@ -43,6 +43,4 @@ jobs:
         env:
           TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }}
           MESSAGE_TEXT: ${{ secrets.MESSAGE_TEXT }}
-          ONE_OFF_TARGET: ${{ secrets.ONE_OFF_TARGET }}       #  Добавь
-          ONE_OFF_MESSAGE: ${{ secrets.ONE_OFF_MESSAGE }}     #  Добавь
         run: python main.py --oneshot
