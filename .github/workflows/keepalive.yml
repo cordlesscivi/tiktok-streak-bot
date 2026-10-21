@@ -8,6 +8,7 @@ on:
 jobs:
   keepalive:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write  # Важно: даём разрешение на управление workflow
     steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - uses: liskin/gh-workflow-keepalive@v1
