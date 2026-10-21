@@ -37,9 +37,9 @@ jobs:
           }
           EOF
 
-      # ==========================================
+     
       # 1. ЗАПУСК ДЛЯ ПЕРВОГО АККАУНТА
-      # ==========================================
+    
       - name: Run Bot for Account 1
         env:
           TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }}
@@ -47,9 +47,9 @@ jobs:
           echo "$TIKTOK_COOKIES" > data/cookies.json
           python main.py --oneshot
 
-      # ==========================================
+  
       # 2. ЗАПУСК ДЛЯ ВТОРОГО АККАУНТА
-      # ==========================================
+  
       - name: Run Bot for Account 2
         env:
           TIKTOK_COOKIES_2: ${{ secrets.TIKTOK_COOKIES_2 }}
