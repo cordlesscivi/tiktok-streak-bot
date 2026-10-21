@@ -1,0 +1,54 @@
+name: Отправить одно сообщение
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_id:
+        description: 'Цифровой ID пользователя'
+        required: true
+        type: string
+      message_text:
+        description: 'Текст сообщения'
+        required: true
+        type: string
+
+jobs:
+  send-message:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare config and cookies
+        env:
+          TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }} # Использует куки первого аккаунта
+          MESSAGE_TEXT: "dummy"
+        run: |
+          mkdir -p data
+          echo "$TIKTOK_COOKIES" > data/cookies.json
+          cat > data/config.json <<EOF
+          {
+            "MESSAGE_TO_SEND": "$MESSAGE_TEXT",
+            "TARGET_SEND_TIME_HM": [12, 0],
+            "COOKIES_FILE": "cookies.json",
+            "LOG_FILENAME": "data/tiktok_bot.log",
+            "TEST_MODE": false
+          }
+          EOF
+
+      - name: Run bot (One-off only)
+        env:
+          ONE_OFF_TARGET: ${{ inputs.target_id }}
+          ONE_OFF_MESSAGE: ${{ inputs.message_text }}
+          SKIP_STREAKS: "true"  # <-- Говорим боту остановиться после отправки
+        run: python main.py --oneshot
